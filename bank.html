@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق مصرفي ليبي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7o0X25t7tU8qg+A9S4+Q4p9t7tDqD+PzS/fL6/fA7s9j5sCj0V2U5oB8y2K5t2z5t8p7Wc5d5d5/3Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #0c1a4b;
+        }
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-container {
+            transition: transform 0.3s ease-in-out;
+        }
+        .toast {
+            font-family: 'Tajawal', sans-serif;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            transition: opacity 0.3s ease-in-out;
+        }
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+        .page-content {
+            display: none;
+        }
+        .active-page {
+            display: flex;
+        }
+        .nav-icon {
+            @apply flex flex-col items-center text-center text-xs text-gray-400 p-2 rounded-lg transition-transform duration-300;
+        }
+        .nav-icon.active {
+            @apply text-blue-900 bg-blue-100 transform scale-110;
+        }
+        .nav-icon .icon {
+            @apply h-6 w-6 mb-1;
+        }
+        /* More page buttons styling */
+        .more-button {
+            @apply w-full font-bold py-4 rounded-xl shadow-lg transition-colors duration-200 flex items-center justify-center space-x-2;
+        }
+        .more-button.blue {
+            @apply bg-blue-900 text-white hover:bg-blue-800;
+        }
+        .more-button.red {
+            @apply bg-red-600 text-white hover:bg-red-700;
+        }
+        .more-button.green {
+            @apply bg-green-600 text-white hover:bg-green-700;
+        }
+        .more-button.orange {
+             @apply bg-orange-500 text-white hover:bg-orange-600;
+        }
+    </style>
+</head>
+<body class="bg-blue-900 min-h-screen flex flex-col justify-end items-center text-right">
+
+    <!-- Login/Registration/Forgot Password Section -->
+    <div id="loginSection" class="w-full flex-grow flex flex-col justify-end items-center text-right">
+        <!-- Logo and Welcome Text -->
+        <div id="welcomeSection" class="flex-grow flex flex-col items-center justify-center p-6 text-white text-center w-full">
+            <div class="flex flex-row items-center justify-center mb-2" dir="ltr">
+                <svg class="w-16 h-16 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20V12H4C4 7.58172 7.58172 4 12 4Z" fill="white"/>
+                </svg>
+                <div class="flex flex-col items-start">
+                    <span class="text-3xl font-bold">مصرف الوحدة</span>
+                    <span class="text-xl font-normal tracking-wide">WAHDA BANK</span>
+                </div>
+            </div>
+            <h1 class="text-lg mt-4 font-normal">مرحبا بك في مصرف الوحدة الرقمي</h1>
+        </div>
+
+        <!-- Login Form -->
+        <div id="mainLoginForm" class="bg-white w-full rounded-t-3xl shadow-2xl p-6 md:p-10 space-y-5 max-w-lg md:max-w-xl">
+            <!-- Login Type Dropdown -->
+            <div class="relative">
+                <div id="dropdownToggle" class="bg-gray-100 rounded-xl p-4 flex justify-between items-center cursor-pointer shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center space-x-3">
+                        <div id="loginTypeIcon" class="h-6 w-6 text-gray-500 flex items-center justify-center">
+                            <i id="individualsIcon" class="fa-solid fa-user text-xl"></i>
+                            <i id="businessIcon" class="fa-solid fa-briefcase hidden text-xl"></i>
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <span id="loginTypeTitle" class="font-semibold text-sm text-gray-800">أفراد</span>
+                            <span id="loginTypeSubtitle" class="text-xs text-gray-500">تسجيل الدخول للأفراد</span>
+                        </div>
+                    </div>
+                    <svg id="toggleDropdownArrow" class="h-5 w-5 text-gray-400 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+                <div id="dropdownMenu" class="absolute w-full mt-2 bg-gray-100 rounded-xl shadow-lg z-10 hidden">
+                    <a href="#" id="selectIndividuals" class="block p-4 hover:bg-gray-200 transition-colors rounded-xl">
+                        <div class="flex flex-col items-start">
+                            <span class="font-semibold text-sm text-gray-800">أفراد</span>
+                            <span class="text-xs text-gray-500">تسجيل الدخول للأفراد</span>
+                        </div>
+                    </a>
+                    <a href="#" id="selectBusiness" class="block p-4 hover:bg-gray-200 transition-colors rounded-xl">
+                        <div class="flex flex-col items-start">
+                            <span class="font-semibold text-sm text-gray-800">أعمال</span>
+                            <span class="text-xs text-gray-500">تسجيل الدخول للأعمال</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Phone Number Input -->
+            <div class="relative">
+                <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow">
+                    <i class="fa-solid fa-phone-flip text-xl text-gray-500 ml-3"></i>
+                    <input type="tel" id="loginPhone" placeholder="رقم الهاتف" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="relative">
+                <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow">
+                    <i class="fa-solid fa-lock text-xl text-gray-500 ml-3"></i>
+                    <input type="password" id="passwordInput" placeholder="كلمة المرور" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                    <i id="togglePassword" class="fa-solid fa-eye text-xl text-gray-500 mr-3 cursor-pointer"></i>
+                </div>
+            </div>
+
+            <!-- Login Button -->
+            <button id="loginButton" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200">
+                تسجيل الدخول
+            </button>
+
+            <!-- Registration Button -->
+            <button id="registerButton" class="w-full border border-blue-900 text-blue-900 font-bold py-4 rounded-xl shadow-lg hover:bg-gray-200 transition-colors duration-200">
+                الاشتراك في التطبيق
+            </button>
+
+            <!-- Forgot Password Link -->
+            <a href="#" id="forgotPasswordLink" class="block text-center text-blue-900 text-sm font-semibold hover:underline">
+                نسيت كلمة المرور؟
+            </a>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="appContainer" class="hidden w-full h-full bg-white flex flex-col justify-between">
+        <!-- Top Nav -->
+        <div class="bg-blue-900 text-white p-4 flex justify-between items-center rounded-b-xl shadow-lg">
+            <div class="flex items-center space-x-4">
+                <button id="profileBtn" class="p-2"><i class="fa-solid fa-user-circle text-2xl"></i></button>
+                <button id="languageBtn" class="p-2 text-sm font-bold">EN</button>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="notificationsBtn" class="p-2"><i class="fa-solid fa-bell text-2xl"></i></button>
+            </div>
+        </div>
+
+        <!-- Pages Content -->
+        <div id="pages" class="flex-grow overflow-y-auto p-4 md:p-6 space-y-6">
+
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page-content active-page flex-col">
+                <div class="bg-blue-900 text-white p-6 rounded-3xl shadow-lg relative">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-lg font-semibold">إجمالي الرصيد المتوفر</h2>
+                        <button id="toggleBalanceBtn" class="text-white text-opacity-75 hover:text-opacity-100 transition-opacity">
+                            <i id="balanceEyeIcon" class="fa-solid fa-eye text-xl"></i>
+                        </button>
+                    </div>
+                    <div id="balanceDisplay" class="text-4xl font-bold mb-4">
+                        <span id="balanceValue">0.00</span> <span class="text-2xl font-normal">د.ل</span>
+                    </div>
+                    <button id="statementBtn" class="bg-white text-blue-900 font-bold py-2 px-4 rounded-full text-sm shadow-md transition-colors hover:bg-gray-200">
+                        كشف الحساب
+                    </button>
+                    <button id="downloadPdfBtn" class="bg-white text-blue-900 font-bold py-2 px-4 rounded-full text-sm shadow-md transition-colors hover:bg-gray-200">
+                        تحميل PDF
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <a href="#" class="service-card p-6 bg-gray-100 rounded-2xl text-center shadow-lg transition-transform hover:scale-105" data-page="libyPayPage">
+                        <img src="https://i.postimg.cc/0y4Nwqtb/feature-image.jpg" alt="LiBY Pay Icon" class="mx-auto mb-2 w-16 h-16 rounded-full object-cover">
+                        <span class="font-semibold text-gray-800">لي باي</span>
+                    </a>
+                    <a href="#" class="service-card p-6 bg-gray-100 rounded-2xl text-center shadow-lg transition-transform hover:scale-105" data-page="onePayPage">
+                        <img src="https://i.postimg.cc/Y2xqxFnc/images.jpg" alt="One Pay Icon" class="mx-auto mb-2 w-16 h-16 rounded-full object-cover">
+                        <span class="font-semibold text-gray-800">وان باي</span>
+                    </a>
+                </div>
+                <div class="mt-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">أحدث المعاملات</h3>
+                    <div id="transactionsList" class="space-y-3">
+                        <!-- Transactions will be rendered here by JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Profile Page -->
+            <div id="profilePage" class="page-content flex-col items-center">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center">الملف الشخصي</h2>
+                <div class="bg-gray-100 p-6 rounded-3xl shadow-lg w-full max-w-sm space-y-4">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <i class="fa-solid fa-user-circle text-5xl text-blue-900"></i>
+                        <h3 id="profileName" class="text-xl font-semibold"></h3>
+                    </div>
+                    <div id="individualProfile" class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-user text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">اسم المستخدم:</span>
+                            <span id="profileUsername" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-id-card text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">الرقم الوطني:</span>
+                            <span id="profileNationalId" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-envelope text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">البريد الإلكتروني:</span>
+                            <span id="profileEmail" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-phone-flip text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">رقم الهاتف:</span>
+                            <span id="profilePhone" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-building-columns text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">فرع المصرف:</span>
+                            <span id="profileBankBranch" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                    </div>
+                    <div id="businessProfile" class="space-y-2 hidden">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-briefcase text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">اسم العمل:</span>
+                            <span id="profileBusinessName" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-id-card text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">الرقم الوطني:</span>
+                            <span id="profileBusinessNationalId" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-envelope text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">البريد الإلكتروني:</span>
+                            <span id="profileBusinessEmail" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-phone-flip text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">رقم الهاتف:</span>
+                            <span id="profileBusinessPhone" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-building-columns text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">فرع المصرف:</span>
+                            <span id="profileBusinessBankBranch" class="flex-grow text-gray-900 font-normal text-sm"></span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                         <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-wallet text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">رقم الحساب:</span>
+                            <div class="flex-grow flex items-center justify-between">
+                                <span id="profileAccount" class="text-gray-900 font-normal text-sm"></span>
+                                <button onclick="copyToClipboard('profileAccount')" class="text-blue-500 hover:text-blue-700">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-credit-card text-xl text-gray-500"></i>
+                            <span class="font-medium text-gray-700">رقم الايبان:</span>
+                            <div class="flex-grow flex items-center justify-between">
+                                <span id="profileIban" class="text-gray-900 font-normal text-sm"></span>
+                                <button onclick="copyToClipboard('profileIban')" class="text-blue-500 hover:text-blue-700">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LiBY Pay Page -->
+            <div id="libyPayPage" class="page-content flex-col">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center">خدمة لي باي</h2>
+                <div class="bg-gray-100 p-6 rounded-2xl shadow-lg space-y-4">
+                    <h3 class="text-lg font-semibold mb-2">إضافة مستفيد جديد</h3>
+                    <div class="flex items-center space-x-2">
+                        <label for="beneficiaryType" class="text-sm font-medium text-gray-700">نوع الحساب:</label>
+                        <select id="beneficiaryType" class="flex-grow bg-white border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                            <option value="individual">فرد</option>
+                            <option value="merchant">تاجر</option>
+                        </select>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="ibanInput" placeholder="رقم الأيبان" class="w-full bg-white border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                        <button id="checkIbanBtn" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-900">
+                             <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="beneficiaryName" placeholder="اسم المستفيد" class="w-full bg-white border border-gray-300 rounded-xl p-3 focus:outline-none text-right" disabled>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="beneficiaryBank" placeholder="اسم المصرف" class="w-full bg-white border border-gray-300 rounded-xl p-3 focus:outline-none text-right" disabled>
+                    </div>
+                    <button id="addBeneficiaryBtn" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200">
+                        إضافة المستفيد
+                    </button>
+                </div>
+                <div class="bg-gray-100 p-6 rounded-2xl shadow-lg space-y-4 mt-6">
+                    <h3 class="text-lg font-semibold mb-2">تحويل إلى مستفيد</h3>
+                    <div class="relative">
+                        <select id="libyPayBeneficiarySelect" class="w-full bg-white border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                            <option value="">اختر مستفيدًا</option>
+                        </select>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="libyPayAmount" placeholder="المبلغ" class="w-full bg-white border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                    </div>
+                    <button id="executeLibyPayBtn" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200">
+                        تنفيذ التحويل
+                    </button>
+                </div>
+            </div>
+
+            <!-- One Pay Page -->
+            <div id="onePayPage" class="page-content flex-col">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center">خدمة وان باي</h2>
+                <div class="grid grid-cols-2 gap-4 text-center mb-6">
+                    <button id="onePayDebit" class="one-pay-tab p-4 bg-blue-900 text-white rounded-xl shadow-lg transition-colors hover:bg-blue-800">
+                        خصم
+                    </button>
+                    <button id="onePayCredit" class="one-pay-tab p-4 bg-gray-200 text-gray-800 rounded-xl shadow-lg transition-colors hover:bg-gray-300">
+                        إيداع
+                    </button>
+                </div>
+                <div id="onePayDebitSection" class="bg-gray-100 p-6 rounded-2xl shadow-lg space-y-4">
+                    <h3 class="text-lg font-semibold mb-2">حركات الخصم</h3>
+                    <div id="debitTransactionsList" class="space-y-3">
+                         <!-- Debit transactions will be rendered here -->
+                    </div>
+                </div>
+                <div id="onePayCreditSection" class="bg-gray-100 p-6 rounded-2xl shadow-lg space-y-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2">حركات الإيداع</h3>
+                    <div id="creditTransactionsList" class="space-y-3">
+                        <!-- Credit transactions will be rendered here -->
+                    </div>
+                </div>
+                <div class="w-full flex justify-end mt-4">
+                     <button id="addOnePayTransactionBtn" class="bg-blue-900 text-white p-4 rounded-full shadow-lg hover:bg-blue-800 transition-colors duration-200 text-xl font-bold flex items-center justify-center space-x-2">
+                         <i class="fa-solid fa-plus"></i>
+                         <span>تحويل قيمة</span>
+                     </button>
+                </div>
+            </div>
+
+            <!-- Payments Page -->
+            <div id="paymentsPage" class="page-content flex-col">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center">المدفوعات</h2>
+                <div id="allTransactionsList" class="space-y-4">
+                    <!-- All detailed transactions will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Internal Transfer Page -->
+            <div id="internalTransferPage" class="page-content flex-col">
+                 <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center">تحويل داخلي</h2>
+                 <div class="bg-gray-100 p-6 rounded-2xl shadow-lg space-y-4">
+                    <h3 class="text-lg font-semibold mb-2">بيانات التحويل</h3>
+                    <div class="relative">
+                        <input type="text" id="transferAccountNumber" placeholder="رقم الحساب" class="w-full bg-white border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                        <button id="checkAccountBtn" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-900">
+                             <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="transferAmount" placeholder="المبلغ" class="w-full bg-white border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                    </div>
+                    <div id="recipientDetails" class="space-y-2 mt-4 hidden">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-user-circle text-gray-500"></i>
+                            <span class="font-medium text-gray-700">الاسم:</span>
+                            <span id="recipientName" class="flex-grow text-gray-900 font-normal text-sm text-left"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-building-columns text-gray-500"></i>
+                            <span class="font-medium text-gray-700">المصرف:</span>
+                            <span id="recipientBank" class="flex-grow text-gray-900 font-normal text-sm text-left"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-map-marker-alt text-gray-500"></i>
+                            <span class="font-medium text-gray-700">الفرع:</span>
+                            <span id="recipientBranch" class="flex-grow text-gray-900 font-normal text-sm text-left"></span>
+                        </div>
+                    </div>
+                    <button id="sendInternalTransferBtn" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200" disabled>
+                        أرسل الآن
+                    </button>
+                 </div>
+            </div>
+
+            <!-- More Page -->
+            <div id="morePage" class="page-content flex-col">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center">المزيد</h2>
+                <div class="bg-gray-100 p-6 rounded-2xl shadow-lg space-y-4">
+                    <!-- Convert to Business Account -->
+                    <button id="businessAccountBtn" class="more-button blue">
+                         <i class="fa-solid fa-briefcase text-white"></i>
+                         <span>تحويل إلى حساب أعمال</span>
+                    </button>
+                    <!-- Revert to Individual Account -->
+                    <button id="revertToIndividualBtn" class="more-button orange hidden">
+                         <i class="fa-solid fa-user-check text-white"></i>
+                         <span>العودة إلى حساب الأفراد</span>
+                    </button>
+
+                    <!-- Comprehensive Report Button -->
+                    <button id="comprehensiveReportBtn" class="more-button green">
+                         <i class="fa-solid fa-chart-pie text-white"></i>
+                         <span>تقرير شامل عن معاملاتك</span>
+                    </button>
+                    
+                    <!-- Change Password -->
+                    <button id="changePasswordBtn" class="more-button blue">
+                        <i class="fa-solid fa-key text-white"></i>
+                        <span>تغيير كلمة المرور</span>
+                    </button>
+
+                    <!-- Help Center -->
+                    <button id="helpCenterBtn" class="more-button blue">
+                        <i class="fa-solid fa-headset text-white"></i>
+                        <span>مركز المساعدة</span>
+                    </button>
+
+                    <!-- Logout -->
+                    <button id="logoutBtn" class="more-button red">
+                         <i class="fa-solid fa-sign-out-alt"></i>
+                         <span>تسجيل الخروج</span>
+                    </button>
+                </div>
+                 <div class="bg-gray-100 p-6 rounded-2xl shadow-lg space-y-4 mt-6">
+                    <h3 class="text-lg font-semibold mb-2 text-blue-900">مميزات إضافية قريــــــبا </h3>
+                    <ul class="list-disc pr-5 space-y-2 text-gray-800">
+                        <li><i class="fa-solid fa-shield-alt text-blue-500 ml-2"></i><span>نظام أمان متقدم لحماية بياناتك</span></li>
+                        <li><i class="fa-solid fa-chart-line text-blue-500 ml-2"></i><span>رسوم بيانية لمتابعة مصروفاتك</span></li>
+                        <li><i class="fa-solid fa-location-dot text-blue-500 ml-2"></i><span>تحديد مواقع أجهزة الصراف الآلي</span></li>
+                        <li><i class="fa-solid fa-headset text-blue-500 ml-2"></i><span>دعم فني على مدار الساعة</span></li>
+                    </ul>
+                 </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bg-white rounded-t-2xl shadow-inner p-2 flex justify-around items-center">
+            <a href="#" class="nav-icon active" data-page="dashboardPage">
+                <i class="fa-solid fa-house icon"></i>
+                <span class="mt-1">الرئيسية</span>
+            </a>
+            <a href="#" class="nav-icon" data-page="internalTransferPage">
+                <i class="fa-solid fa-circle-dollar-to-slot icon"></i>
+                <span class="mt-1">تحويل داخلي</span>
+            </a>
+            <a href="#" class="nav-icon" data-page="profilePage">
+                 <i class="fa-solid fa-user icon"></i>
+                 <span class="mt-1">الملف الشخصي</span>
+            </a>
+            <a href="#" class="nav-icon" data-page="morePage">
+                <i class="fa-solid fa-ellipsis-h icon"></i>
+                <span class="mt-1">المزيد</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- The Modal Container -->
+    <div id="modalOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-overlay opacity-0">
+        <div id="modalContainer" class="bg-white w-full rounded-xl shadow-2xl p-6 md:p-10 space-y-5 transform scale-95 md:max-w-md">
+            <!-- Modal content will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-0 left-1/2 -translate-x-1/2 p-4 mb-6 rounded-lg shadow-xl text-white text-center z-50 hidden toast"></div>
+
+    <script>
+        // Data Structures (In-memory, simulating a database)
+        const usersData = {
+            "users": [
+                {
+                    "phone": "0925513418",
+                    "password": "AD612612",
+                    "type": "individual",
+                    "details": {
+                        "name": "معمر جادالله حمد",
+                        "username": "muammar_hmd",
+                        "national_id": "119940051218",
+                        "email": "muammar.hmd@example.com",
+                        "account_number": "141012109435018",
+                        "iban_number": "LY17004141141012109435018",
+                        "bank_branch": "بنغازي",
+                        "balance": 5000.00,
+                        "transfer_limit": 1000
+                    }
+                },
+                {
+                    "phone": "0911234567",
+                    "password": "pass123",
+                    "type": "individual",
+                    "details": {
+                        "name": "فاطمة علي",
+                        "username": "fatima_ali",
+                        "national_id": "1234567890123",
+                        "email": "fatima.ali@example.com",
+                        "account_number": "987654321",
+                        "iban_number": "LY17004141141012109435019",
+                        "bank_branch": "طرابلس",
+                        "balance": 150.00,
+                        "transfer_limit": 1000
+                    }
+                },
+                {
+                    "phone": "0921234567",
+                    "password": "pass123",
+                    "type": "business",
+                    "details": {
+                        "name": "شركة التقنية المحدودة",
+                        "username": "tech_ltd",
+                        "national_id": "119940051218",
+                        "email": "info@techltd.com",
+                        "account_number": "141012109437018",
+                        "iban_number": "LY17004141141012109437018",
+                        "bank_branch": "بنغازي الرئيسي",
+                        "balance": 25000.00,
+                        "transfer_limit": 50000
+                    }
+                }
+            ]
+        };
+
+        const beneficiariesData = {
+            "beneficiaries": [
+                 {
+                    "iban": "LY17004141141012109435018",
+                    "name": "معمر جادالله حمد",
+                    "bank": "التجاري الوطني",
+                    "type": "فرد"
+                 }
+            ]
+        };
+        
+        const knownBanks = {
+            "التجاري الوطني": {
+                "accounts": ["141012109435018"],
+                "name": "المصرف التجاري الوطني"
+            },
+            "شمال أفريقيا": {
+                "accounts": ["1234567890"],
+                "name": "مصرف شمال أفريقيا"
+            },
+            "السراي": {
+                "accounts": ["0987654321"],
+                "name": "مصرف السراي"
+            },
+            "الوحدة": {
+                "accounts": ["141012109437018", "987654321"],
+                "name": "مصرف الوحدة",
+                "branch": {
+                    "141012109437018": "بنغازي الرئيسي",
+                    "987654321": "طرابلس"
+                }
+            }
+        };
+        
+        let transactionsData = {
+            "transactions": [
+                {
+                    "id": 1,
+                    "type": "credit",
+                    "service": "إيداع",
+                    "amount": 500.00,
+                    "date": "2024-09-18",
+                    "time": "10:30 ص",
+                    "description": "إيداع راتب",
+                    "recipient_name": "معمر جادالله حمد",
+                    "account_number": "141012109435018"
+                },
+                 {
+                    "id": 2,
+                    "type": "debit",
+                    "service": "سحب آلي",
+                    "amount": 100.00,
+                    "date": "2024-09-17",
+                    "time": "03:15 م",
+                    "description": "سحب من الصراف الآلي",
+                    "recipient_name": "معمر جادالله حمد",
+                    "account_number": "141012109435018"
+                },
+                 {
+                    "id": 3,
+                    "type": "debit",
+                    "service": "تحويل داخلي",
+                    "amount": 50.00,
+                    "date": "2024-09-16",
+                    "time": "09:00 ص",
+                    "description": "تحويل إلى فاطمة علي",
+                    "recipient_name": "فاطمة علي",
+                    "account_number": "987654321"
+                }
+            ]
+        };
+
+        // DOM Elements
+        const loginSection = document.getElementById('loginSection');
+        const appContainer = document.getElementById('appContainer');
+        const welcomeSection = document.getElementById('welcomeSection');
+        const mainLoginForm = document.getElementById('mainLoginForm');
+        const dropdownToggle = document.getElementById('dropdownToggle');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const selectIndividuals = document.getElementById('selectIndividuals');
+        const selectBusiness = document.getElementById('selectBusiness');
+        const loginTypeTitle = document.getElementById('loginTypeTitle');
+        const loginTypeSubtitle = document.getElementById('loginTypeSubtitle');
+        const individualsIcon = document.getElementById('individualsIcon');
+        const businessIcon = document.getElementById('businessIcon');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginPhoneInput = document.getElementById('loginPhone');
+        const togglePassword = document.getElementById('togglePassword');
+        const loginButton = document.getElementById('loginButton');
+        const registerButton = document.getElementById('registerButton');
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalContainer = document.getElementById('modalContainer');
+        const toastNotification = document.getElementById('toastNotification');
+        const toggleDropdownArrow = document.getElementById('toggleDropdownArrow');
+        
+        // General buttons
+        const notificationsBtn = document.getElementById('notificationsBtn');
+        const statementBtn = document.getElementById('statementBtn');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // More Page Buttons
+        const businessAccountBtn = document.getElementById('businessAccountBtn');
+        const revertToIndividualBtn = document.getElementById('revertToIndividualBtn');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const helpCenterBtn = document.getElementById('helpCenterBtn');
+        const comprehensiveReportBtn = document.getElementById('comprehensiveReportBtn');
+
+
+        // Profile Elements
+        const profileBtn = document.getElementById('profileBtn');
+        const profilePage = document.getElementById('profilePage');
+        const profileName = document.getElementById('profileName');
+        const profileUsername = document.getElementById('profileUsername');
+        const profileNationalId = document.getElementById('profileNationalId');
+        const profileEmail = document.getElementById('profileEmail');
+        const profilePhone = document.getElementById('profilePhone');
+        const profileBankBranch = document.getElementById('profileBankBranch');
+        const profileAccount = document.getElementById('profileAccount');
+        const profileIban = document.getElementById('profileIban');
+        const individualProfile = document.getElementById('individualProfile');
+        const businessProfile = document.getElementById('businessProfile');
+        
+        // Business Profile Elements
+        const profileBusinessName = document.getElementById('profileBusinessName');
+        const profileBusinessNationalId = document.getElementById('profileBusinessNationalId');
+        const profileBusinessEmail = document.getElementById('profileBusinessEmail');
+        const profileBusinessPhone = document.getElementById('profileBusinessPhone');
+        const profileBusinessBankBranch = document.getElementById('profileBusinessBankBranch');
+
+
+        // Dashboard Elements
+        const toggleBalanceBtn = document.getElementById('toggleBalanceBtn');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const balanceValue = document.getElementById('balanceValue');
+        const transactionsList = document.getElementById('transactionsList');
+
+        // LiBY Pay Elements
+        const ibanInput = document.getElementById('ibanInput');
+        const checkIbanBtn = document.getElementById('checkIbanBtn');
+        const beneficiaryName = document.getElementById('beneficiaryName');
+        const beneficiaryBank = document.getElementById('beneficiaryBank');
+        const addBeneficiaryBtn = document.getElementById('addBeneficiaryBtn');
+        const libyPayBeneficiarySelect = document.getElementById('libyPayBeneficiarySelect');
+        const libyPayAmount = document.getElementById('libyPayAmount');
+        const executeLibyPayBtn = document.getElementById('executeLibyPayBtn');
+
+        // One Pay Elements
+        const onePayDebitBtn = document.getElementById('onePayDebit');
+        const onePayCreditBtn = document.getElementById('onePayCredit');
+        const onePayDebitSection = document.getElementById('onePayDebitSection');
+        const onePayCreditSection = document.getElementById('onePayCreditSection');
+        const debitTransactionsList = document.getElementById('debitTransactionsList');
+        const creditTransactionsList = document.getElementById('creditTransactionsList');
+        const addOnePayTransactionBtn = document.getElementById('addOnePayTransactionBtn');
+        
+        // Payments Page
+        const allTransactionsList = document.getElementById('allTransactionsList');
+
+        // Internal Transfer Elements
+        const transferAccountNumberInput = document.getElementById('transferAccountNumber');
+        const checkAccountBtn = document.getElementById('checkAccountBtn');
+        const transferAmountInput = document.getElementById('transferAmount');
+        const recipientDetailsDiv = document.getElementById('recipientDetails');
+        const recipientNameSpan = document.getElementById('recipientName');
+        const recipientBankSpan = document.getElementById('recipientBank');
+        const recipientBranchSpan = document.getElementById('recipientBranch');
+        const sendInternalTransferBtn = document.getElementById('sendInternalTransferBtn');
+
+
+        let currentLoginType = 'individuals';
+        let loggedInUser = null;
+
+        // --- Utility Functions ---
+        function showToast(message, type = 'error') {
+            toastNotification.textContent = message;
+            toastNotification.classList.remove('hidden', 'bg-red-500', 'bg-green-500', 'bg-blue-500');
+            if (type === 'success') {
+                toastNotification.classList.add('bg-green-500');
+            } else if (type === 'info') {
+                 toastNotification.classList.add('bg-blue-500');
+            }
+            else {
+                toastNotification.classList.add('bg-red-500');
+            }
+            setTimeout(() => {
+                toastNotification.classList.add('hidden');
+            }, 3000);
+        }
+
+        function showModal(content) {
+            modalContainer.innerHTML = content;
+            modalOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                modalOverlay.classList.remove('opacity-0');
+                modalContainer.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function hideModal() {
+            modalOverlay.classList.add('opacity-0');
+            modalContainer.classList.add('scale-95');
+            setTimeout(() => {
+                modalOverlay.classList.add('hidden');
+            }, 300);
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent.trim();
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast("تم نسخ النص بنجاح!", 'success');
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                    showToast("فشل في نسخ النص.", 'error');
+                });
+            } else {
+                showToast("متصفحك لا يدعم النسخ.", 'error');
+            }
+        }
+        // Expose copy function globally for inline onClick
+        window.copyToClipboard = copyToClipboard;
+
+
+        // --- Navigation Logic ---
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active-page');
+            });
+            document.getElementById(pageId).classList.add('active-page');
+
+            document.querySelectorAll('.nav-icon').forEach(icon => {
+                icon.classList.remove('active');
+            });
+            document.querySelector(`.nav-icon[data-page="${pageId}"]`).classList.add('active');
+
+            if (pageId === 'libyPayPage') {
+                loadBeneficiariesToSelect('libyPay');
+            }
+            if (pageId === 'profilePage') {
+                updateProfilePage();
+            }
+            if (pageId === 'onePayPage') {
+                onePayDebitBtn.click();
+                renderOnePayTransactions();
+            }
+            if (pageId === 'paymentsPage') {
+                renderAllTransactions();
+            }
+            if (pageId === 'morePage') {
+                updateMorePage();
+            }
+        }
+
+        document.querySelectorAll('.nav-icon, .service-card').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page');
+                if (pageId) {
+                    navigateTo(pageId);
+                }
+            });
+        });
+        
+        notificationsBtn.addEventListener('click', () => {
+             showModal(getNotificationsModalHtml());
+        });
+
+        statementBtn.addEventListener('click', () => {
+            showModal(getStatementModalHtml());
+            document.getElementById('fetchStatement').addEventListener('click', () => {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                if (!startDate || !endDate) {
+                    showToast("يرجى اختيار تاريخي البدء والانتهاء.", 'error');
+                    return;
+                }
+
+                // Simulate fetching and displaying statement data
+                const filteredTransactions = transactionsData.transactions.filter(tx => {
+                    const txDate = new Date(tx.date);
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    return txDate >= start && txDate <= end;
+                });
+
+                let statementHtml = `<div class="p-4 md:p-6 text-right">
+                    <h3 class="text-xl font-bold mb-4 text-center">كشف حساب</h3>
+                    <p class="text-gray-600 text-center mb-4">كشف حساب للفترة من ${startDate} إلى ${endDate}</p>
+                    <div class="bg-gray-100 p-4 rounded-xl max-h-96 overflow-y-auto space-y-3">`;
+
+                if (filteredTransactions.length > 0) {
+                    filteredTransactions.forEach(tx => {
+                        const amountClass = tx.type === 'credit' ? 'text-green-600' : 'text-red-600';
+                        const sign = tx.type === 'credit' ? '+' : '-';
+                        statementHtml += `
+                            <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center">
+                                <div class="flex items-center space-x-2">
+                                     <i class="fa-solid ${tx.type === 'credit' ? 'fa-arrow-up text-green-600' : 'fa-arrow-down text-red-600'}"></i>
+                                     <div class="flex flex-col">
+                                          <span class="font-semibold text-gray-800">${tx.service}</span>
+                                          <span class="text-xs text-gray-500">${tx.description}</span>
+                                     </div>
+                                </div>
+                                <div class="flex flex-col text-left">
+                                     <span class="font-bold ${amountClass}">${sign} ${tx.amount.toFixed(2)} د.ل</span>
+                                     <span class="text-xs text-gray-400">${tx.date}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    statementHtml += `<p class="text-center text-gray-500 italic">لا توجد معاملات في الفترة المحددة.</p>`;
+                }
+
+                statementHtml += `</div>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>`;
+
+                showModal(statementHtml);
+                document.getElementById('closeModal').addEventListener('click', hideModal);
+            });
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        });
+
+        downloadPdfBtn.addEventListener('click', () => {
+             // Generate a simple PDF-like text blob to simulate download
+             const transactionsText = transactionsData.transactions.map(tx => {
+                 return `التاريخ: ${tx.date}\nالنوع: ${tx.type}\nالخدمة: ${tx.service}\nالمبلغ: ${tx.amount.toFixed(2)} د.ل\nالتفاصيل: ${tx.description}\n`;
+             }).join('\n---\n');
+
+             const content = `كشف حساب مصرفي\n\nاسم العميل: ${loggedInUser.details.name}\nرقم الحساب: ${loggedInUser.details.account_number}\n\nالمعاملات الأخيرة:\n\n${transactionsText}`;
+             const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
+             const link = document.createElement('a');
+             link.href = URL.createObjectURL(blob);
+             link.download = `كشف-حساب-${new Date().toISOString().slice(0, 10)}.txt`;
+             link.click();
+             showToast('جارٍ تحميل كشف الحساب...', 'info');
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            loggedInUser = null;
+            transactionsData.transactions = [];
+            loginPhoneInput.value = '';
+            passwordInput.value = '';
+            loginSection.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+            showToast('تم تسجيل الخروج بنجاح.', 'success');
+        });
+
+        businessAccountBtn.addEventListener('click', () => {
+            if (loggedInUser.type === 'individual') {
+                showModal(getBusinessAccountModalHtml());
+                document.getElementById('verifyBusiness').addEventListener('click', () => {
+                    const nationalId = document.getElementById('businessNationalId').value;
+                    const phone = document.getElementById('businessPhone').value;
+                    const name = document.getElementById('businessName').value;
+
+                    if (nationalId.trim() === '' || phone.trim() === '' || name.trim() === '') {
+                        showToast("يرجى ملء جميع الحقول المطلوبة.", 'error');
+                        return;
+                    }
+
+                    if (nationalId.length !== 13) {
+                        showToast("الرقم الوطني يجب أن يكون مكونًا من 13 رقمًا.", 'error');
+                        return;
+                    }
+
+                    if (phone.length !== 10) {
+                        showToast("رقم الهاتف يجب أن يكون مكونًا من 10 أرقام.", 'error');
+                        return;
+                    }
+
+                    showModal(getPhoneVerificationHtml('business'));
+                    addPhoneVerificationListeners('business', () => {
+                        loggedInUser.type = 'business';
+                        // Keep a reference to the old individual data before updating
+                        loggedInUser.old_individual_details = { ...loggedInUser.details };
+                        
+                        loggedInUser.details.name = name;
+                        loggedInUser.details.national_id = nationalId;
+                        loggedInUser.details.phone = phone;
+                        loggedInUser.details.iban_number = "LY17004141141012109437018"; // New IBAN for business
+                        loggedInUser.details.account_number = "141012109437018"; // New account for business
+                        loggedInUser.details.email = "business_user@example.com";
+                        loggedInUser.details.username = "business_user";
+                        loggedInUser.details.transfer_limit = 50000;
+                        updateMorePage();
+                        updateProfilePage();
+                        hideModal();
+                        showToast("تم تحويل حسابك إلى حساب أعمال بنجاح.", 'success');
+                    });
+                });
+                document.getElementById('closeModal').addEventListener('click', hideModal);
+            }
+        });
+
+        revertToIndividualBtn.addEventListener('click', () => {
+            if (loggedInUser.type === 'business' && loggedInUser.old_individual_details) {
+                // Revert to the stored individual user data
+                loggedInUser.type = 'individual';
+                loggedInUser.details = { ...loggedInUser.old_individual_details };
+                delete loggedInUser.old_individual_details; // Clean up old data
+                updateMorePage();
+                updateProfilePage();
+                showToast("تم العودة إلى حساب الأفراد بنجاح.", 'success');
+            }
+        });
+
+        changePasswordBtn.addEventListener('click', () => {
+            showModal(getChangePasswordModalHtml());
+            document.getElementById('changePasswordConfirm').addEventListener('click', () => {
+                const oldPassword = document.getElementById('oldPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+                if (oldPassword !== loggedInUser.password) {
+                    showToast("كلمة المرور القديمة غير صحيحة.", 'error');
+                    return;
+                }
+                if (newPassword !== confirmNewPassword) {
+                    showToast("كلمتا المرور الجديدتان غير متطابقتين.", 'error');
+                    return;
+                }
+                if (newPassword.trim() === '') {
+                    showToast("كلمة المرور الجديدة لا يمكن أن تكون فارغة.", 'error');
+                    return;
+                }
+
+                loggedInUser.password = newPassword;
+                hideModal();
+                showToast("تم تغيير كلمة المرور بنجاح.", 'success');
+            });
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        });
+
+        helpCenterBtn.addEventListener('click', () => {
+             showModal(getHelpCenterModalHtml());
+             document.getElementById('closeModal').addEventListener('click', hideModal);
+        });
+
+        // --- Login & Registration Flow ---
+        function setLoginType(type) {
+            currentLoginType = type;
+            if (type === 'individuals') {
+                loginTypeTitle.textContent = 'أفراد';
+                loginTypeSubtitle.textContent = 'تسجيل الدخول للأفراد';
+                individualsIcon.classList.remove('hidden');
+                businessIcon.classList.add('hidden');
+            } else {
+                loginTypeTitle.textContent = 'أعمال';
+                loginTypeSubtitle.textContent = 'تسجيل الدخول للأعمال';
+                individualsIcon.classList.add('hidden');
+                businessIcon.classList.remove('hidden');
+            }
+        }
+
+        dropdownToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+            toggleDropdownArrow.classList.toggle('rotate-180');
+        });
+
+        selectIndividuals.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdownMenu.classList.add('hidden');
+            toggleDropdownArrow.classList.remove('rotate-180');
+            setLoginType('individuals');
+        });
+
+        selectBusiness.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdownMenu.classList.add('hidden');
+            toggleDropdownArrow.classList.remove('rotate-180');
+            setLoginType('business');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!dropdownToggle.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.classList.add('hidden');
+                toggleDropdownArrow.classList.remove('rotate-180');
+            }
+        });
+
+        togglePassword.addEventListener('click', () => {
+            const isPasswordVisible = passwordInput.type === 'text';
+            passwordInput.type = isPasswordVisible ? 'password' : 'text';
+            togglePassword.classList.toggle('fa-eye', !isPasswordVisible);
+            togglePassword.classList.toggle('fa-eye-slash', isPasswordVisible);
+        });
+
+        loginButton.addEventListener('click', () => {
+            const phone = loginPhoneInput.value;
+            const password = passwordInput.value;
+
+            if (phone === '' || password === '') {
+                showToast("الرجاء إدخال رقم الهاتف وكلمة المرور.", 'error');
+                return;
+            }
+            
+            // Fix: Check for user by phone and password only
+            const foundUser = usersData.users.find(user => user.phone === phone && user.password === password);
+
+            if (foundUser) {
+                loggedInUser = foundUser;
+                currentLoginType = loggedInUser.type; // Set the current login type based on the found user
+                setLoginType(currentLoginType); // Update the dropdown UI
+                showToast("تم تسجيل الدخول بنجاح.", 'success');
+                loginSection.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                updateDashboard();
+                updateProfilePage();
+            } else {
+                showToast("عذراً، بيانات تسجيل الدخول غير صحيحة.", 'error');
+            }
+        });
+
+        // Registration Flow
+        registerButton.addEventListener('click', () => {
+            showModal(getRegistrationStep1Html());
+            addRegistrationStep1Listeners();
+        });
+
+        function getRegistrationStep1Html() {
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">اختر نوع الحساب</h2>
+                    <button id="selectIndividualReg" class="w-full border border-blue-900 text-blue-900 font-bold py-4 rounded-xl shadow-lg hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center space-x-2 mb-4">
+                        <i class="fa-solid fa-user-gear text-xl"></i>
+                        <span>أفراد</span>
+                    </button>
+                    <button id="selectBusinessReg" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-briefcase text-xl"></i>
+                        <span>أعمال</span>
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function addRegistrationStep1Listeners() {
+            document.getElementById('selectIndividualReg').addEventListener('click', () => {
+                showModal(getRegistrationStep2Html('أفراد'));
+                addRegistrationStep2Listeners('أفراد');
+            });
+            document.getElementById('selectBusinessReg').addEventListener('click', () => {
+                showModal(getRegistrationStep2Html('أعمال'));
+                addRegistrationStep2Listeners('أعمال');
+            });
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        }
+
+        function getRegistrationStep2Html(type) {
+            const passportInput = type === 'أفراد' ? `
+                <div class="relative">
+                    <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                        <i class="fa-solid fa-passport text-xl text-gray-500 ml-3"></i>
+                        <input type="text" id="regPassport" placeholder="رقم جواز السفر (اختياري)" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                    </div>
+                </div>
+            ` : '';
+            const emailInput = type === 'أعمال' ? `
+                <div class="relative">
+                    <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                        <i class="fa-solid fa-at text-xl text-gray-500 ml-3"></i>
+                        <input type="email" id="regEmail" placeholder="البريد الإلكتروني" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                    </div>
+                </div>
+            ` : '';
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">بيانات التسجيل (${type})</h2>
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-phone-flip text-xl text-gray-500 ml-3"></i>
+                            <input type="tel" id="regPhone" placeholder="رقم الهاتف" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-id-card text-xl text-gray-500 ml-3"></i>
+                            <input type="text" id="regNationalId" placeholder="الرقم الوطني" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-bank text-xl text-gray-500 ml-3"></i>
+                            <input type="text" id="regAccount" placeholder="رقم الحساب" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    ${passportInput}
+                    ${emailInput}
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-lock text-xl text-gray-500 ml-3"></i>
+                            <input type="password" id="regPassword" placeholder="كلمة مرور جديدة" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-lock text-xl text-gray-500 ml-3"></i>
+                            <input type="password" id="confirmRegPassword" placeholder="تأكيد كلمة المرور" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    <button id="continueReg" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                        متابعة
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function addRegistrationStep2Listeners(type) {
+            document.getElementById('continueReg').addEventListener('click', () => {
+                const phone = document.getElementById('regPhone').value;
+                const nationalId = document.getElementById('regNationalId').value;
+                const accountNum = document.getElementById('regAccount').value;
+                const regPassword = document.getElementById('regPassword').value;
+                const confirmRegPassword = document.getElementById('confirmRegPassword').value;
+                const passport = type === 'أفراد' ? document.getElementById('regPassport').value : null;
+                const email = type === 'أعمال' ? document.getElementById('regEmail').value : null;
+
+                if (phone.length !== 10) {
+                    showToast("يرجى إدخال رقم هاتف صحيح مكون من 10 أرقام.", 'error');
+                    return;
+                }
+                
+                if (nationalId.length !== 13) {
+                    showToast("الرقم الوطني يجب أن يكون مكونًا من 13 رقمًا بالضبط.", 'error');
+                    return;
+                }
+
+                if (accountNum.trim() === '') {
+                    showToast("يرجى إدخال رقم الحساب.", 'error');
+                    return;
+                }
+                
+                if (regPassword.trim() === '' || confirmRegPassword.trim() === '') {
+                    showToast("يرجى إدخال وتأكيد كلمة المرور.", 'error');
+                    return;
+                }
+
+                if (regPassword !== confirmRegPassword) {
+                    showToast("كلمتا المرور غير متطابقتين.", 'error');
+                    return;
+                }
+                
+                if (usersData.users.find(u => u.phone === phone)) {
+                    showToast("هذا الرقم مسجل بالفعل.", 'error');
+                    return;
+                }
+                
+                // Construct a new user object based on the input
+                const newUserDetails = {
+                    "name": "مستخدم جديد",
+                    "username": "new_user",
+                    "national_id": nationalId,
+                    "email": email || 'غير متوفر',
+                    "account_number": accountNum,
+                    "iban_number": `LY${Math.floor(Math.random() * 10000000000000000)}`, // Generate a random IBAN
+                    "bank_branch": "فرع افتراضي",
+                    "balance": 0.00,
+                    "transfer_limit": type === 'أفراد' ? 1000 : 50000
+                };
+
+                usersData.users.push({
+                    "phone": phone,
+                    "password": regPassword,
+                    "type": type === 'أفراد' ? 'individual' : 'business',
+                    "details": newUserDetails
+                });
+
+                showModal(getPhoneVerificationHtml());
+                addPhoneVerificationListeners();
+            });
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        }
+
+        function getPhoneVerificationHtml(type = 'registration') {
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">التحقق من رقم الهاتف</h2>
+                    <p class="text-gray-600 mb-4">أدخل رمز التحقق المكون من 6 أرقام الذي تم إرساله إلى هاتفك.</p>
+                    <div id="otp-inputs" class="flex justify-center my-4 space-x-2" dir="ltr">
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                    </div>
+                    <button id="verifyPhone" data-type="${type}" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                        تحقق
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function addPhoneVerificationListeners(type = 'registration', callback) {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const otpContainer = document.getElementById('otp-inputs');
+
+            otpInputs.forEach((input, index) => {
+                 input.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    } else if (e.target.value.length === 0 && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                        setTimeout(() => otpInputs[index - 1].focus(), 0);
+                    }
+                });
+            });
+
+            otpContainer.addEventListener('paste', (e) => {
+                const pasteData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+                if (pasteData.length === 6) {
+                    otpInputs.forEach((input, index) => {
+                        input.value = pasteData[index];
+                    });
+                    otpInputs[otpInputs.length - 1].focus();
+                }
+                e.preventDefault();
+            });
+
+            document.getElementById('verifyPhone').addEventListener('click', () => {
+                const otpCode = Array.from(otpInputs).map(input => input.value).join('');
+                if (otpCode.length === 6) {
+                    if (type === 'registration') {
+                         showToast("تم التحقق بنجاح! يمكنك الآن تسجيل الدخول.", 'success');
+                         hideModal();
+                    } else if (type === 'business') {
+                         if (callback) callback();
+                    }
+                } else {
+                    showToast("يرجى إدخال الرمز المكون من 6 أرقام بشكل صحيح.", 'error');
+                }
+            });
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        }
+
+        // Forgot Password Flow
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showModal(getForgotPasswordStep1Html());
+            addForgotPasswordStep1Listeners();
+        });
+
+        function getForgotPasswordStep1Html() {
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">نسيت كلمة المرور</h2>
+                    <p class="text-gray-600 mb-4">أدخل رقم هاتفك لإعادة تعيين كلمة المرور.</p>
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-phone-flip text-xl text-gray-500 ml-3"></i>
+                            <input type="tel" id="forgotPhone" placeholder="رقم الهاتف" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    <button id="sendCode" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                        إرسال رمز التحقق
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function addForgotPasswordStep1Listeners() {
+            document.getElementById('sendCode').addEventListener('click', () => {
+                const phone = document.getElementById('forgotPhone').value;
+                if (phone.length !== 10) {
+                    showToast("الرجاء إدخال رقم هاتف صحيح مكون من 10 أرقام.", 'error');
+                    return;
+                }
+                showModal(getForgotPasswordStep2Html());
+                addForgotPasswordStep2Listeners();
+            });
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        }
+
+        function getForgotPasswordStep2Html() {
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">التحقق من رقم الهاتف</h2>
+                    <p class="text-gray-600 mb-4">أدخل رمز التحقق الذي تم إرساله إلى هاتفك.</p>
+                    <div id="otp-inputs-forgot" class="flex items-center justify-center my-4 space-x-2" dir="ltr">
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                        <input type="tel" maxlength="1" class="otp-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" pattern="[0-9]"/>
+                    </div>
+                    <button id="verifyCode" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                        تحقق
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function addForgotPasswordStep2Listeners() {
+            const otpInputs = document.querySelectorAll('#otp-inputs-forgot .otp-input');
+            const otpContainer = document.getElementById('otp-inputs-forgot');
+
+            otpInputs.forEach((input, index) => {
+                 input.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    } else if (e.target.value.length === 0 && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                        setTimeout(() => otpInputs[index - 1].focus(), 0);
+                    }
+                });
+            });
+
+            otpContainer.addEventListener('paste', (e) => {
+                const pasteData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+                if (pasteData.length === 6) {
+                    otpInputs.forEach((input, index) => {
+                        input.value = pasteData[index];
+                    });
+                    otpInputs[otpInputs.length - 1].focus();
+                }
+                e.preventDefault();
+            });
+
+            document.getElementById('verifyCode').addEventListener('click', () => {
+                const otpCode = Array.from(otpInputs).map(input => input.value).join('');
+                if (otpCode.length === 6) {
+                    showModal(getForgotPasswordStep3Html());
+                    addForgotPasswordStep3Listeners();
+                } else {
+                    showToast("يرجى إدخال الرمز المكون من 6 أرقام بشكل صحيح.", 'error');
+                }
+            });
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        }
+
+        function getForgotPasswordStep3Html() {
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">أدخل كلمة مرور جديدة</h2>
+                    <input type="password" id="newPassword" placeholder="كلمة مرور جديدة" class="w-full bg-gray-100 rounded-xl p-4 text-right placeholder-gray-500 mb-3 focus:outline-none">
+                    <input type="password" id="confirmPassword" placeholder="تأكيد كلمة المرور" class="w-full bg-gray-100 rounded-xl p-4 text-right placeholder-gray-500 mb-3 focus:outline-none">
+                    <button id="resetPassword" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                        تغيير كلمة المرور
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function addForgotPasswordStep3Listeners() {
+            document.getElementById('resetPassword').addEventListener('click', () => {
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (newPassword.trim() === '') {
+                    showToast("يرجى إدخال كلمة مرور جديدة.", 'error');
+                    return;
+                }
+
+                if (confirmPassword.trim() === '') {
+                    showToast("يرجى تأكيد كلمة المرور.", 'error');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    showToast("كلمتا المرور غير متطابقتين. يرجى المحاولة مرة أخرى.", 'error');
+                    return;
+                }
+
+                // Update the password in the mock data (for the current login type)
+                const userToUpdate = usersData.users.find(user => user.phone === loginPhoneInput.value);
+                if (userToUpdate) {
+                    userToUpdate.password = newPassword;
+                    showToast("تم تغيير كلمة المرور بنجاح!", 'success');
+                } else {
+                     showToast("حدث خطأ أثناء تغيير كلمة المرور.", 'error');
+                }
+                
+                hideModal();
+            });
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        }
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                hideModal();
+            }
+        });
+
+        function getNotificationsModalHtml() {
+            return `
+                <div class="relative p-4 md:p-6">
+                    <h2 class="text-xl font-bold mb-4 text-center">الإشعارات</h2>
+                    <p class="text-gray-600 text-center">لا توجد إشعارات جديدة حاليًا.</p>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function getStatementModalHtml() {
+            return `
+                 <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">كشف الحساب</h2>
+                    <p class="text-gray-600 mb-4">اختر الفترة الزمنية التي ترغب في عرضها.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2">
+                            <label for="startDate" class="text-sm font-medium text-gray-700">من تاريخ:</label>
+                            <input type="date" id="startDate" class="flex-grow bg-gray-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                             <label for="endDate" class="text-sm font-medium text-gray-700">إلى تاريخ:</label>
+                            <input type="date" id="endDate" class="flex-grow bg-gray-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                        </div>
+                    </div>
+                    <button id="fetchStatement" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                        عرض كشف الحساب
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function getTransactionDetailsModalHtml(transaction) {
+            return `
+                <div class="relative p-4 md:p-6">
+                    <h2 class="text-xl font-bold mb-4 text-center">تفاصيل المعاملة</h2>
+                    <div class="space-y-4 text-right">
+                         <div class="flex items-center space-x-2">
+                             <i class="fa-solid fa-calendar-alt text-gray-500"></i>
+                             <span class="text-gray-700">التاريخ:</span>
+                             <span class="flex-grow text-gray-900 font-medium">${transaction.date}</span>
+                         </div>
+                          <div class="flex items-center space-x-2">
+                             <i class="fa-solid fa-clock text-gray-500"></i>
+                             <span class="text-gray-700">الوقت:</span>
+                             <span class="flex-grow text-gray-900 font-medium">${transaction.time}</span>
+                         </div>
+                         <div class="flex items-center space-x-2">
+                             <i class="fa-solid fa-wallet text-gray-500"></i>
+                             <span class="text-gray-700">المبلغ:</span>
+                             <span class="flex-grow text-gray-900 font-medium">${transaction.amount.toFixed(2)} د.ل</span>
+                         </div>
+                         <div class="flex items-center space-x-2">
+                             <i class="fa-solid fa-info-circle text-gray-500"></i>
+                             <span class="text-gray-700">النوع:</span>
+                             <span class="flex-grow text-gray-900 font-medium">${transaction.type === 'debit' ? 'خصم' : 'إيداع'}</span>
+                         </div>
+                         <div class="flex items-center space-x-2">
+                             <i class="fa-solid fa-cogs text-gray-500"></i>
+                             <span class="text-gray-700">الخدمة:</span>
+                             <span class="flex-grow text-gray-900 font-medium">${transaction.service}</span>
+                         </div>
+                         <div class="flex items-center space-x-2">
+                             <i class="fa-solid fa-file-invoice text-gray-500"></i>
+                             <span class="text-gray-700">التفاصيل:</span>
+                             <span class="flex-grow text-gray-900 font-medium">${transaction.description}</span>
+                         </div>
+                         ${transaction.account_number ? `<div class="flex items-center space-x-2">
+                              <i class="fa-solid fa-bank text-gray-500"></i>
+                              <span class="text-gray-700">الحساب:</span>
+                              <span class="flex-grow text-gray-900 font-medium">${transaction.account_number}</span>
+                         </div>` : ''}
+                         ${transaction.recipient_name ? `<div class="flex items-center space-x-2">
+                              <i class="fa-solid fa-user-circle text-gray-500"></i>
+                              <span class="text-gray-700">المستلم:</span>
+                              <span class="flex-grow text-gray-900 font-medium">${transaction.recipient_name}</span>
+                         </div>` : ''}
+                    </div>
+                     <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function getBusinessAccountModalHtml() {
+             return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">تحويل إلى حساب أعمال</h2>
+                    <p class="text-gray-600 mb-4">يرجى إدخال البيانات التالية للتحويل.</p>
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-id-card text-xl text-gray-500 ml-3"></i>
+                            <input type="text" id="businessNationalId" placeholder="الرقم الوطني" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-phone-flip text-xl text-gray-500 ml-3"></i>
+                            <input type="tel" id="businessPhone" placeholder="رقم الهاتف" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="bg-gray-100 rounded-xl p-4 flex items-center shadow-sm hover:shadow-md transition-shadow mb-3">
+                            <i class="fa-solid fa-user text-xl text-gray-500 ml-3"></i>
+                            <input type="text" id="businessName" placeholder="الاسم" class="flex-grow bg-transparent focus:outline-none text-right placeholder-gray-500">
+                        </div>
+                    </div>
+                    <button id="verifyBusiness" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                        تحقق
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+             `;
+        }
+
+        function getChangePasswordModalHtml() {
+            return `
+                 <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">تغيير كلمة المرور</h2>
+                    <div class="relative">
+                        <input type="password" id="oldPassword" placeholder="كلمة المرور القديمة" class="w-full bg-gray-100 rounded-xl p-4 text-right placeholder-gray-500 mb-3 focus:outline-none">
+                    </div>
+                    <div class="relative">
+                        <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة" class="w-full bg-gray-100 rounded-xl p-4 text-right placeholder-gray-500 mb-3 focus:outline-none">
+                    </div>
+                    <div class="relative">
+                        <input type="password" id="confirmNewPassword" placeholder="تأكيد كلمة المرور الجديدة" class="w-full bg-gray-100 rounded-xl p-4 text-right placeholder-gray-500 mb-3 focus:outline-none">
+                    </div>
+                    <button id="changePasswordConfirm" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                        تأكيد
+                    </button>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        function getHelpCenterModalHtml() {
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">مركز المساعدة</h2>
+                    <p class="text-gray-600 mb-4">للمساعدة والدعم الفني، يرجى التواصل معنا عبر:</p>
+                    <div class="space-y-4 text-right">
+                        <div class="flex items-center space-x-2 justify-end">
+                            <span class="text-gray-900 font-medium">0913924181</span>
+                            <i class="fa-solid fa-phone-flip text-gray-500"></i>
+                        </div>
+                        <div class="flex items-center space-x-2 justify-end">
+                            <span class="text-gray-900 font-medium">almhqqsynshy737@gmail.com</span>
+                            <i class="fa-solid fa-envelope text-gray-500"></i>
+                        </div>
+                        <div class="flex items-center space-x-2 justify-end">
+                             <a href="https://wa.me/qr/FWTJVFUWAYI7K1" target="_blank" class="text-gray-900 font-medium hover:underline flex items-center space-x-2">
+                                <i class="fa-brands fa-whatsapp text-green-500 text-xl"></i>
+                                <span>واتساب</span>
+                            </a>
+                        </div>
+                    </div>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+        
+        // --- AI Report Modals ---
+        function getLoadingModalHtml() {
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">يتم إعداد التقرير</h2>
+                    <p class="text-gray-600 mb-4">الرجاء الانتظار، يتم تحليل بياناتك المالية.</p>
+                    <div class="flex justify-center items-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getReportModalHtml(reportContent) {
+            return `
+                <div class="relative p-4 md:p-6 text-right">
+                    <h2 class="text-2xl font-bold mb-4 text-center">التقرير المالي الشامل</h2>
+                    <p class="text-gray-600 mb-4 text-center">تحليل متقدم عن معاملاتك</p>
+                    <div class="bg-gray-100 p-4 rounded-xl max-h-96 overflow-y-auto">
+                        <p class="text-gray-800 whitespace-pre-wrap leading-relaxed">${reportContent}</p>
+                    </div>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+
+
+        // --- Profile Page Logic ---
+        function updateProfilePage() {
+            if (loggedInUser) {
+                profileName.textContent = loggedInUser.details.name;
+                
+                // Show/Hide profile fields based on account type
+                if (loggedInUser.type === 'individual') {
+                    individualProfile.classList.remove('hidden');
+                    businessProfile.classList.add('hidden');
+                    document.getElementById('profileUsername').textContent = loggedInUser.details.username || 'غير متوفر';
+                    document.getElementById('profileNationalId').textContent = loggedInUser.details.national_id || 'غير متوفر';
+                    document.getElementById('profileEmail').textContent = loggedInUser.details.email || 'غير متوفر';
+                    document.getElementById('profilePhone').textContent = loggedInUser.phone;
+                    document.getElementById('profileBankBranch').textContent = loggedInUser.details.bank_branch;
+                } else {
+                    individualProfile.classList.add('hidden');
+                    businessProfile.classList.remove('hidden');
+                    profileBusinessName.textContent = loggedInUser.details.name;
+                    profileBusinessNationalId.textContent = loggedInUser.details.national_id || 'غير متوفر';
+                    profileBusinessEmail.textContent = loggedInUser.details.email || 'غير متوفر';
+                    profileBusinessPhone.textContent = loggedInUser.phone;
+                    profileBusinessBankBranch.textContent = loggedInUser.details.bank_branch;
+                }
+
+                profileAccount.textContent = loggedInUser.details.account_number;
+                profileIban.textContent = loggedInUser.details.iban_number;
+            }
+        }
+        
+        // --- More Page Logic ---
+        function updateMorePage() {
+            if (loggedInUser && loggedInUser.type === 'business') {
+                businessAccountBtn.classList.add('hidden');
+                revertToIndividualBtn.classList.remove('hidden');
+            } else {
+                 businessAccountBtn.classList.remove('hidden');
+                 revertToIndividualBtn.classList.add('hidden');
+            }
+        }
+
+        // --- Dashboard Logic ---
+        function updateDashboard() {
+            if (loggedInUser) {
+                balanceValue.textContent = loggedInUser.details.balance.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                renderTransactions();
+            }
+        }
+
+        let isBalanceHidden = false;
+        toggleBalanceBtn.addEventListener('click', () => {
+            if (isBalanceHidden) {
+                balanceValue.textContent = loggedInUser.details.balance.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                toggleBalanceBtn.innerHTML = '<i class="fa-solid fa-eye text-xl"></i>';
+                isBalanceHidden = false;
+            } else {
+                balanceValue.textContent = '***,***';
+                toggleBalanceBtn.innerHTML = '<i class="fa-solid fa-eye-slash text-xl"></i>';
+                isBalanceHidden = true;
+            }
+        });
+
+        function renderTransactions() {
+            transactionsList.innerHTML = '';
+            const recentTransactions = transactionsData.transactions.slice(0, 5);
+            if (recentTransactions.length === 0) {
+                 const noTransactions = document.createElement('p');
+                 noTransactions.className = 'text-center text-gray-500 italic mt-8';
+                 noTransactions.textContent = 'لا توجد معاملات حديثة.';
+                 transactionsList.appendChild(noTransactions);
+                 return;
+            }
+
+            recentTransactions.forEach(tx => {
+                const amountClass = tx.type === 'credit' ? 'text-green-600' : 'text-red-600';
+                const sign = tx.type === 'credit' ? '+' : '-';
+                const transactionItem = document.createElement('div');
+                transactionItem.className = 'bg-gray-100 p-4 rounded-xl shadow-sm flex justify-between items-center transition-colors hover:bg-gray-200';
+                transactionItem.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-white p-2 rounded-full shadow">
+                            <i class="fa-solid ${tx.type === 'credit' ? 'fa-arrow-up text-green-600' : 'fa-arrow-down text-red-600'}"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-gray-800">${tx.service}</span>
+                            <span class="text-sm text-gray-500">${tx.description}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col text-left">
+                        <span class="font-bold ${amountClass}">${sign} ${tx.amount.toFixed(2)} د.ل</span>
+                        <span class="text-xs text-gray-400">${tx.date}</span>
+                    </div>
+                `;
+                transactionsList.appendChild(transactionItem);
+            });
+        }
+        
+        // --- Payments Page Logic ---
+        function renderAllTransactions() {
+            allTransactionsList.innerHTML = '';
+            if (transactionsData.transactions.length === 0) {
+                const noTransactions = document.createElement('p');
+                noTransactions.className = 'text-center text-gray-500 italic mt-8';
+                noTransactions.textContent = 'لا توجد معاملات حتى الآن.';
+                allTransactionsList.appendChild(noTransactions);
+                return;
+            }
+
+            transactionsData.transactions.forEach(tx => {
+                 const amountClass = tx.type === 'credit' ? 'text-green-600' : 'text-red-600';
+                 const sign = tx.type === 'credit' ? '+' : '-';
+                 const transactionItem = document.createElement('div');
+                 transactionItem.className = 'bg-gray-100 p-4 rounded-xl shadow-sm flex justify-between items-center transition-colors hover:bg-gray-200 cursor-pointer';
+                 transactionItem.innerHTML = `
+                     <div class="flex items-center space-x-4">
+                         <div class="bg-white p-2 rounded-full shadow">
+                             <i class="fa-solid ${tx.type === 'credit' ? 'fa-arrow-up text-green-600' : 'fa-arrow-down text-red-600'}"></i>
+                         </div>
+                         <div class="flex flex-col">
+                             <span class="font-semibold text-gray-800">${tx.service}</span>
+                             <span class="text-sm text-gray-500">${tx.description}</span>
+                         </div>
+                     </div>
+                     <div class="flex flex-col text-left">
+                         <span class="font-bold ${amountClass}">${sign} ${tx.amount.toFixed(2)} د.ل</span>
+                         <span class="text-xs text-gray-400">${tx.date}</span>
+                     </div>
+                 `;
+                 transactionItem.addEventListener('click', () => {
+                     showModal(getTransactionDetailsModalHtml(tx));
+                     document.getElementById('closeModal').addEventListener('click', hideModal);
+                 });
+                 allTransactionsList.appendChild(transactionItem);
+            });
+        }
+
+        // --- LiBY Pay Logic ---
+        checkIbanBtn.addEventListener('click', () => {
+             const iban = ibanInput.value.replace(/\s/g, '');
+             if (!iban) {
+                 showToast("الرجاء إدخال رقم الأيبان للتحقق.", 'error');
+                 return;
+             }
+
+             showToast("يتم التحقق من رقم الأيبان...", 'info');
+
+             setTimeout(() => {
+                 const beneficiary = beneficiariesData.beneficiaries.find(b => b.iban === iban);
+                 if (beneficiary) {
+                     beneficiaryName.value = beneficiary.name;
+                     beneficiaryBank.value = beneficiary.bank;
+                     beneficiaryName.disabled = false;
+                     beneficiaryBank.disabled = false;
+                     showToast("تم التحقق بنجاح. يمكن إضافة المستفيد.", 'success');
+                 } else {
+                     // Simulate finding a new, valid beneficiary
+                     const isKnownUser = usersData.users.find(user => user.details.iban_number === iban);
+                     if (isKnownUser) {
+                          beneficiaryName.value = isKnownUser.details.name;
+                          beneficiaryBank.value = "مصرف الوحدة"; // Assuming it's a known user within the same bank
+                          showToast("تم التحقق بنجاح. يمكن إضافة المستفيد.", 'success');
+                          beneficiaryName.disabled = false;
+                          beneficiaryBank.disabled = false;
+                     } else {
+                          beneficiaryName.value = 'مستفيد جديد';
+                          beneficiaryBank.value = 'مصرف خارجي افتراضي';
+                          beneficiaryName.disabled = false;
+                          beneficiaryBank.disabled = false;
+                          showToast("تم التحقق بنجاح. هذا مستفيد جديد.", 'success');
+                     }
+                 }
+             }, 1000); // Simulate network delay
+        });
+
+        addBeneficiaryBtn.addEventListener('click', () => {
+            const iban = ibanInput.value.trim();
+            const name = beneficiaryName.value.trim();
+            const bank = beneficiaryBank.value.trim();
+            const type = document.getElementById('beneficiaryType').value;
+            
+            if (iban === '' || name === '' || bank === '') {
+                showToast("يرجى تعبئة جميع الحقول المطلوبة.", 'error');
+                return;
+            }
+
+            // Check if the beneficiary already exists by IBAN
+            if (beneficiariesData.beneficiaries.find(b => b.iban === iban)) {
+                showToast("هذا المستفيد موجود بالفعل في القائمة.", 'error');
+                return;
+            }
+            
+            // Fix: Check for exact match of IBAN LY17004141141012109435018
+            const specialIban = "LY17004141141012109435018";
+            if (iban === specialIban && beneficiariesData.beneficiaries.find(b => b.iban === specialIban)) {
+                 showToast("هذا المستفيد موجود بالفعل في القائمة.", 'error');
+                 return;
+            }
+             if (beneficiariesData.beneficiaries.find(b => b.iban === iban)) {
+                 showToast("هذا المستفيد موجود بالفعل في القائمة.", 'error');
+                 return;
+            }
+
+            beneficiariesData.beneficiaries.push({
+                "iban": iban,
+                "name": name,
+                "bank": bank,
+                "type": type
+            });
+            showToast("تمت إضافة المستفيد بنجاح!", 'success');
+            ibanInput.value = '';
+            beneficiaryName.value = '';
+            beneficiaryBank.value = '';
+            beneficiaryName.disabled = true;
+            beneficiaryBank.disabled = true;
+            loadBeneficiariesToSelect('libyPay');
+        });
+
+        executeLibyPayBtn.addEventListener('click', () => {
+            const amount = parseFloat(libyPayAmount.value);
+            const selectedIban = libyPayBeneficiarySelect.value;
+            
+            if (isNaN(amount) || amount <= 0) {
+                showToast("الرجاء إدخال مبلغ صحيح.", 'error');
+                return;
+            }
+            // Check for transfer limit
+            if (loggedInUser && amount > loggedInUser.details.transfer_limit) {
+                showToast(`عذراً، المبلغ يتجاوز سقف التحويل المسموح به لحسابك وهو ${loggedInUser.details.transfer_limit} د.ل.`, 'error');
+                return;
+            }
+            if (selectedIban === '') {
+                showToast("الرجاء اختيار مستفيد من القائمة.", 'error');
+                return;
+            }
+            if (loggedInUser.details.balance < amount) {
+                showToast("الرصيد غير كافٍ لإتمام العملية.", 'error');
+                return;
+            }
+            const beneficiary = beneficiariesData.beneficiaries.find(b => b.iban === selectedIban);
+            showModal(getConfirmationModalHtml(`تحويل ${amount.toFixed(2)} د.ل إلى ${beneficiary.name}`));
+            document.getElementById('confirmAction').addEventListener('click', () => {
+                // Deduct from sender's balance
+                loggedInUser.details.balance -= amount;
+                
+                // Add to recipient's balance if they are a known user
+                const recipientUser = usersData.users.find(user => user.details.iban_number === selectedIban);
+                if (recipientUser) {
+                    recipientUser.details.balance += amount;
+                    // Log transaction for recipient
+                    transactionsData.transactions.unshift({
+                        "id": new Date().getTime() + 1,
+                        "type": "credit",
+                        "service": "LiBY Pay",
+                        "amount": amount,
+                        "date": new Date().toISOString().slice(0, 10),
+                        "time": new Date().toLocaleTimeString('ar-LY'),
+                        "description": `إيداع من ${loggedInUser.details.name}`,
+                        "recipient_name": loggedInUser.details.name,
+                        "account_number": loggedInUser.details.account_number
+                    });
+                }
+                
+                // Log transaction for sender
+                transactionsData.transactions.unshift({
+                    "id": new Date().getTime(),
+                    "type": "debit",
+                    "service": "LiBY Pay",
+                    "amount": amount,
+                    "date": new Date().toISOString().slice(0, 10),
+                    "time": new Date().toLocaleTimeString('ar-LY'),
+                    "description": `تحويل إلى ${beneficiary.name}`,
+                    "recipient_name": beneficiary.name,
+                    "account_number": beneficiary.iban
+                });
+
+                updateDashboard();
+                libyPayAmount.value = '';
+                libyPayBeneficiarySelect.value = '';
+                hideModal();
+                showToast(`تم تحويل ${amount.toFixed(2)} د.ل إلى ${beneficiary.name} بنجاح!`, 'success');
+            });
+            document.getElementById('cancelAction').addEventListener('click', hideModal);
+        });
+
+        function loadBeneficiariesToSelect(page) {
+            let selectElement = null;
+            if (page === 'libyPay') {
+                selectElement = libyPayBeneficiarySelect;
+            }
+            
+            if (selectElement) {
+                selectElement.innerHTML = `<option value="">اختر مستفيدًا</option>`;
+                beneficiariesData.beneficiaries.forEach(beneficiary => {
+                    const option = document.createElement('option');
+                    option.value = beneficiary.iban;
+                    option.textContent = `${beneficiary.name} (${beneficiary.bank})`;
+                    selectElement.appendChild(option);
+                });
+            }
+        }
+        
+        function getConfirmationModalHtml(message) {
+            return `
+                <div class="text-center p-4">
+                    <h3 class="text-xl font-bold mb-4">تأكيد العملية</h3>
+                    <p class="text-gray-700 mb-6">${message}. هل أنت متأكد؟</p>
+                    <div class="flex justify-center space-x-4">
+                        <button id="confirmAction" class="bg-blue-900 text-white font-bold py-2 px-6 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200">
+                            تأكيد
+                        </button>
+                        <button id="cancelAction" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-xl shadow-lg hover:bg-gray-400 transition-colors duration-200">
+                            إلغاء
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getTransferModalHtml() {
+            return `
+                <div class="relative p-4 md:p-6 text-center">
+                    <h2 class="text-xl font-bold mb-4">تحويل قيمة</h2>
+                    <div class="relative">
+                        <select id="onePayTransferType" class="w-full bg-gray-100 border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right mb-4">
+                            <option value="purchase">عملية شراء</option>
+                            <option value="transfer">تحويل أموال</option>
+                            <option value="beneficiaryList">قائمة المستفيدين</option>
+                        </select>
+                    </div>
+                    
+                    <div id="transferFields" class="space-y-4">
+                        <div class="relative">
+                            <select id="banksSelect" class="w-full bg-gray-100 border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                                <option value="">اختر المصرف</option>
+                                <option value="التجاري الوطني">التجاري الوطني</option>
+                                <option value="شمال أفريقيا">شمال أفريقيا</option>
+                                <option value="السراي">السراي</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="accountInput" placeholder="رقم الحساب أو المحفظة" class="w-full bg-gray-100 border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                        </div>
+                        <div class="relative">
+                            <input type="number" id="amountInput" placeholder="قيمة التحويل" class="w-full bg-gray-100 border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-right">
+                        </div>
+                        <button id="executeOnePayBtn" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-800 transition-colors duration-200 mt-5">
+                            تحويل
+                        </button>
+                    </div>
+
+                    <div id="beneficiaryListModal" class="hidden space-y-4">
+                        <div id="beneficiariesContainer" class="space-y-3">
+                            <!-- Beneficiaries will be loaded here -->
+                        </div>
+                    </div>
+                    <button id="closeModal" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+        }
+        
+        function addTransferModalListeners() {
+            const onePayTransferType = document.getElementById('onePayTransferType');
+            const transferFields = document.getElementById('transferFields');
+            const beneficiaryListModal = document.getElementById('beneficiaryListModal');
+            
+            onePayTransferType.addEventListener('change', (e) => {
+                 const selectedAction = e.target.value;
+                 if (selectedAction === 'beneficiaryList') {
+                     transferFields.classList.add('hidden');
+                     beneficiaryListModal.classList.remove('hidden');
+                     renderBeneficiariesList();
+                 } else {
+                     transferFields.classList.remove('hidden');
+                     beneficiaryListModal.classList.add('hidden');
+                 }
+            });
+
+            document.getElementById('executeOnePayBtn').addEventListener('click', () => {
+                 const amount = parseFloat(document.getElementById('amountInput').value);
+                 const bank = document.getElementById('banksSelect').value;
+                 const account = document.getElementById('accountInput').value;
+                 const type = onePayTransferType.value;
+
+                 if (isNaN(amount) || amount <= 0) {
+                    showToast("الرجاء إدخال مبلغ صحيح.", 'error');
+                    return;
+                }
+                if (!bank && type !== 'beneficiaryList') {
+                    showToast("الرجاء اختيار المصرف.", 'error');
+                    return;
+                }
+                if (!account && type !== 'beneficiaryList') {
+                     showToast("الرجاء إدخال رقم الحساب أو المحفظة.", 'error');
+                     return;
+                }
+                
+                // Simulate account check
+                const isAccountFound = knownBanks[bank] && knownBanks[bank].accounts.includes(account);
+                if (!isAccountFound && type === 'transfer' && bank !== 'الوحدة') { // Only check for banks other than Al-Wahda
+                     showToast("رقم الحساب غير صالح لهذا المصرف.", 'error');
+                     return;
+                }
+
+                if (loggedInUser.details.balance < amount) {
+                    showToast("الرصيد غير كافٍ لإتمام العملية.", 'error');
+                    return;
+                }
+                // Check for transfer limit
+                if (loggedInUser && amount > loggedInUser.details.transfer_limit) {
+                    showToast(`عذراً، المبلغ يتجاوز سقف التحويل المسموح به لحسابك وهو ${loggedInUser.details.transfer_limit} د.ل.`, 'error');
+                    return;
+                }
+
+                let recipientName = 'مجهول';
+                if (type === 'transfer' && isAccountFound) {
+                    const recipient = usersData.users.find(u => u.details.account_number === account);
+                    if (recipient) recipientName = recipient.details.name;
+                }
+
+                showModal(getConfirmationModalHtml(`تحويل ${amount.toFixed(2)} د.ل إلى ${recipientName}`));
+                document.getElementById('confirmAction').addEventListener('click', () => {
+                    loggedInUser.details.balance -= amount;
+                    transactionsData.transactions.unshift({
+                        "id": new Date().getTime(),
+                        "type": "debit",
+                        "service": "OnePay",
+                        "amount": amount,
+                        "date": new Date().toISOString().slice(0, 10),
+                        "time": new Date().toLocaleTimeString('ar-LY'),
+                        "description": type === 'purchase' ? `عملية شراء` : `تحويل إلى ${recipientName}`,
+                        "recipient_name": recipientName,
+                        "account_number": account
+                    });
+                    
+                    if (type === 'transfer' && isAccountFound) {
+                        const recipient = usersData.users.find(u => u.details.account_number === account);
+                        if (recipient) {
+                             recipient.details.balance += amount;
+                             transactionsData.transactions.unshift({
+                                "id": new Date().getTime() + 1,
+                                "type": "credit",
+                                "service": "OnePay",
+                                "amount": amount,
+                                "date": new Date().toISOString().slice(0, 10),
+                                "time": new Date().toLocaleTimeString('ar-LY'),
+                                "description": `إيداع من ${loggedInUser.details.name}`,
+                                "recipient_name": loggedInUser.details.name,
+                                "account_number": loggedInUser.details.account_number
+                            });
+                        }
+                    }
+
+                    updateDashboard();
+                    hideModal();
+                    showToast(`تم تنفيذ العملية بنجاح!`, 'success');
+                });
+                document.getElementById('cancelAction').addEventListener('click', hideModal);
+            });
+             document.getElementById('closeModal').addEventListener('click', hideModal);
+        }
+
+        function renderOnePayTransactions() {
+            debitTransactionsList.innerHTML = '';
+            creditTransactionsList.innerHTML = '';
+            const debitTxs = transactionsData.transactions.filter(tx => tx.type === 'debit' && tx.service === 'OnePay');
+            const creditTxs = transactionsData.transactions.filter(tx => tx.type === 'credit' && tx.service === 'OnePay');
+            
+            if (debitTxs.length === 0) {
+                 debitTransactionsList.innerHTML = '<p class="text-center text-gray-500 italic mt-4">لا توجد حركات خصم.</p>';
+            } else {
+                 debitTxs.forEach(tx => {
+                     const item = document.createElement('div');
+                     item.className = 'bg-white p-4 rounded-xl shadow-sm flex justify-between items-center';
+                     item.innerHTML = `
+                         <div class="flex items-center space-x-2">
+                             <i class="fa-solid fa-arrow-down text-red-600"></i>
+                             <span class="font-semibold text-gray-800">${tx.description}</span>
+                         </div>
+                         <span class="font-bold text-red-600">- ${tx.amount.toFixed(2)} د.ل</span>
+                     `;
+                     debitTransactionsList.appendChild(item);
+                 });
+            }
+
+            if (creditTxs.length === 0) {
+                 creditTransactionsList.innerHTML = '<p class="text-center text-gray-500 italic mt-4">لا توجد حركات إيداع.</p>';
+            } else {
+                 creditTxs.forEach(tx => {
+                     const item = document.createElement('div');
+                     item.className = 'bg-white p-4 rounded-xl shadow-sm flex justify-between items-center';
+                     item.innerHTML = `
+                         <div class="flex items-center space-x-2">
+                             <i class="fa-solid fa-arrow-up text-green-600"></i>
+                             <span class="font-semibold text-gray-800">${tx.description}</span>
+                         </div>
+                         <span class="font-bold text-green-600">+ ${tx.amount.toFixed(2)} د.ل</span>
+                     `;
+                     creditTransactionsList.appendChild(item);
+                 });
+            }
+        }
+        
+        addOnePayTransactionBtn.addEventListener('click', () => {
+            showModal(getTransferModalHtml());
+            addTransferModalListeners();
+        });
+
+        onePayDebitBtn.addEventListener('click', () => {
+            onePayDebitBtn.classList.add('bg-blue-900', 'text-white');
+            onePayDebitBtn.classList.remove('bg-gray-200', 'text-gray-800');
+            onePayCreditBtn.classList.remove('bg-blue-900', 'text-white');
+            onePayCreditBtn.classList.add('bg-gray-200', 'text-gray-800');
+            onePayDebitSection.classList.remove('hidden');
+            onePayCreditSection.classList.add('hidden');
+            renderOnePayTransactions();
+        });
+
+        onePayCreditBtn.addEventListener('click', () => {
+            onePayCreditBtn.classList.add('bg-blue-900', 'text-white');
+            onePayCreditBtn.classList.remove('bg-gray-200', 'text-gray-800');
+            onePayDebitBtn.classList.remove('bg-blue-900', 'text-white');
+            onePayDebitBtn.classList.add('bg-gray-200', 'text-gray-800');
+            onePayCreditSection.classList.remove('hidden');
+            onePayDebitSection.classList.add('hidden');
+            renderOnePayTransactions();
+        });
+        
+        function renderBeneficiariesList() {
+            const beneficiariesContainer = document.getElementById('beneficiariesContainer');
+            beneficiariesContainer.innerHTML = '';
+            if (beneficiariesData.beneficiaries.length === 0) {
+                const noBeneficiaries = document.createElement('p');
+                noBeneficiaries.className = 'text-center text-gray-500 italic mt-8';
+                noBeneficiaries.textContent = 'لا يوجد مستفيدون.';
+                beneficiariesContainer.appendChild(noBeneficiaries);
+                return;
+            }
+
+            beneficiariesData.beneficiaries.forEach(beneficiary => {
+                const beneficiaryCard = document.createElement('div');
+                beneficiaryCard.className = 'bg-white p-4 rounded-xl shadow-sm flex flex-col space-y-2';
+                beneficiaryCard.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-user-circle text-xl text-blue-900"></i>
+                        <span class="font-semibold text-gray-800">${beneficiary.name}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-credit-card text-sm text-gray-500"></i>
+                        <span class="text-sm text-gray-700">IBAN: ${beneficiary.iban}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-bank text-sm text-gray-500"></i>
+                        <span class="text-sm text-gray-700">المصرف: ${beneficiary.bank}</span>
+                    </div>
+                `;
+                beneficiariesContainer.appendChild(beneficiaryCard);
+            });
+        }
+
+        // --- Internal Transfer Logic ---
+        checkAccountBtn.addEventListener('click', () => {
+            const accountNumber = transferAccountNumberInput.value.trim();
+            if (accountNumber === '') {
+                showToast("الرجاء إدخال رقم الحساب.", 'error');
+                return;
+            }
+
+            const foundUser = usersData.users.find(user => user.details.account_number === accountNumber);
+            if (foundUser) {
+                recipientNameSpan.textContent = foundUser.details.name;
+                recipientBankSpan.textContent = 'الوحدة';
+                recipientBranchSpan.textContent = foundUser.details.bank_branch;
+                recipientDetailsDiv.classList.remove('hidden');
+                sendInternalTransferBtn.disabled = false;
+                showToast("تم التحقق من الحساب بنجاح.", 'success');
+            } else {
+                recipientNameSpan.textContent = '';
+                recipientBankSpan.textContent = '';
+                recipientBranchSpan.textContent = '';
+                recipientDetailsDiv.classList.add('hidden');
+                sendInternalTransferBtn.disabled = true;
+                showToast("رقم الحساب غير صحيح أو غير موجود.", 'error');
+            }
+        });
+
+        sendInternalTransferBtn.addEventListener('click', () => {
+            const amount = parseFloat(transferAmountInput.value);
+            const recipientAccount = transferAccountNumberInput.value.trim();
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast("الرجاء إدخال مبلغ صحيح.", 'error');
+                return;
+            }
+            // Check for transfer limit
+            if (loggedInUser && amount > loggedInUser.details.transfer_limit) {
+                showToast(`عذراً، المبلغ يتجاوز سقف التحويل المسموح به لحسابك وهو ${loggedInUser.details.transfer_limit} د.ل.`, 'error');
+                return;
+            }
+
+            if (loggedInUser.details.balance < amount) {
+                showToast("الرصيد غير كافٍ لإتمام العملية.", 'error');
+                return;
+            }
+
+            const recipient = usersData.users.find(user => user.details.account_number === recipientAccount);
+            if (!recipient) {
+                showToast("حدث خطأ، المستلم غير موجود.", 'error');
+                return;
+            }
+
+            showModal(getConfirmationModalHtml(`تحويل ${amount.toFixed(2)} د.ل إلى ${recipient.details.name}`));
+            document.getElementById('confirmAction').addEventListener('click', () => {
+                loggedInUser.details.balance -= amount;
+                recipient.details.balance += amount;
+
+                // Log transaction for sender
+                transactionsData.transactions.unshift({
+                    "id": new Date().getTime(),
+                    "type": "debit",
+                    "service": "تحويل داخلي",
+                    "amount": amount,
+                    "date": new Date().toISOString().slice(0, 10),
+                    "time": new Date().toLocaleTimeString('ar-LY'),
+                    "description": `تحويل داخلي إلى ${recipient.details.name}`,
+                    "recipient_name": recipient.details.name,
+                    "account_number": recipient.details.account_number
+                });
+
+                // Log transaction for recipient
+                transactionsData.transactions.unshift({
+                    "id": new Date().getTime() + 1,
+                    "type": "credit",
+                    "service": "تحويل داخلي",
+                    "amount": amount,
+                    "date": new Date().toISOString().slice(0, 10),
+                    "time": new Date().toLocaleTimeString('ar-LY'),
+                    "description": `إيداع من ${loggedInUser.details.name}`,
+                    "recipient_name": loggedInUser.details.name,
+                    "account_number": loggedInUser.details.account_number
+                });
+
+                updateDashboard();
+                transferAmountInput.value = '';
+                transferAccountNumberInput.value = '';
+                recipientDetailsDiv.classList.add('hidden');
+                sendInternalTransferBtn.disabled = true;
+                hideModal();
+                showToast(`تم تحويل ${amount.toFixed(2)} د.ل إلى ${recipient.details.name} بنجاح!`, 'success');
+            });
+            document.getElementById('cancelAction').addEventListener('click', hideModal);
+        });
+
+        // --- AI Report Logic ---
+        comprehensiveReportBtn.addEventListener('click', async () => {
+            showModal(getLoadingModalHtml());
+
+            const apiKey = "AIzaSyBU99plzQ93XOCcvkRvYND1tJRCH-FbVU0";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const userPrompt = `أنا بحاجة إلى تقرير مالي شامل. يرجى تحليل هذه البيانات المالية وتقديم ملخص مفصل عن المعاملات، الإيداعات، الخصومات، والقروض أو الأقساط إن وجدت. قم بتنظيم التقرير في فقرات واضحة وموجزة. هنا بيانات المعاملات: ${JSON.stringify(transactionsData.transactions, null, 2)}`;
+            
+            const payload = {
+                contents: [{
+                    parts: [{ text: userPrompt }]
+                }],
+                tools: [{ "google_search": {} }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const reportText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "عذراً، لم أتمكن من إنشاء التقرير. يرجى المحاولة لاحقاً.";
+                
+                showModal(getReportModalHtml(reportText));
+            } catch (error) {
+                console.error('Error fetching AI report:', error);
+                showModal(getReportModalHtml("عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى."));
+            }
+            document.getElementById('closeModal').addEventListener('click', hideModal);
+        });
+
+        // --- Initialize ---
+        window.onload = () => {
+            // Restore login screen on refresh
+            loginSection.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+        };
+    </script>
+</body>
+</html>
+
